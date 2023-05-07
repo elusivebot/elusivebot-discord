@@ -9,6 +9,7 @@ repositories {
 }
 
 dependencies {
+    implementation("dev.kord:kord-core:0.9.0")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.3")
 }
