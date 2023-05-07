@@ -1,5 +1,5 @@
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.7.10"
+    id("org.jetbrains.kotlin.jvm") version "1.8.21"
     application
     id("net.researchgate.release") version "3.0.2"
 }
@@ -10,7 +10,7 @@ repositories {
 
 dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.3")
 }
 
 application {
@@ -30,7 +30,7 @@ tasks.register("printVersion") {
 configure<net.researchgate.release.ReleaseExtension> {
   tagTemplate.set("v\${version}")
     with(git) {
-      requireBranch.set("master")
+      requireBranch.set("main")
     }
 }
 
