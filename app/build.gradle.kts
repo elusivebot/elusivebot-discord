@@ -5,7 +5,7 @@ plugins {
 }
 
 repositories {
-    mavenCentral()
+  mavenCentral()
 }
 
 dependencies {
@@ -15,11 +15,11 @@ dependencies {
 }
 
 application {
-    mainClass.set("com.sirnuke.elusivebot.discord.MainKt")
+  mainClass.set("com.sirnuke.elusivebot.discord.MainKt")
 }
 
 tasks.named<Test>("test") {
-    useJUnitPlatform()
+  useJUnitPlatform()
 }
 
 tasks.register("printVersion") {
