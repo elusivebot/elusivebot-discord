@@ -1,0 +1,5 @@
+venv/
+gradle/
+.gradle/
+bin/
+app/build/distributions/*.tar
