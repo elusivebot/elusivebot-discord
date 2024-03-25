@@ -8,7 +8,7 @@ object DiscordSpec : ConfigSpec() {
 
     object Kafka : ConfigSpec() {
         val bootstrap by required<String>()
-        val producerChannel by optional("discord-input")
-        val consumerChannel by optional("discord-output")
+        val producerTopic by optional("discord-input")
+        val consumerTopic by optional("discord-output")
     }
 }

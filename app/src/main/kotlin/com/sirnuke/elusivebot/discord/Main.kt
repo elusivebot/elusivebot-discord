@@ -38,13 +38,14 @@ import kotlinx.serialization.json.Json
 @Suppress("TOO_LONG_FUNCTION")
 fun main() = runBlocking {
     val log = LoggerFactory.getLogger("com.sirnuke.elusivebot.discord.MainKt")
-    log.info("Starting Discord service")
 
     // spotless:off
     val config = Config { addSpec(DiscordSpec) }
         .from.yaml.file("/config/discord-service.yml")
         .from.env()
     // spotless:on
+
+    log.info("Starting Discord service producer {} & consumer {}", config[DiscordSpec.Kafka.producerTopic], config[DiscordSpec.Kafka.consumerTopic])
 
     val running = AtomicBoolean(true)
 
@@ -67,7 +68,7 @@ fun main() = runBlocking {
 
     val producer: KafkaProducer<String, String> = KafkaProducer(producerConfig)
 
-    val consumer: KStream<String, String> = builder.stream(config[DiscordSpec.Kafka.consumerChannel])
+    val consumer: KStream<String, String> = builder.stream(config[DiscordSpec.Kafka.consumerTopic])
 
     val kord = Kord(config[DiscordSpec.discordToken])
 
@@ -113,7 +114,7 @@ fun main() = runBlocking {
         )
         producer.send(
             ProducerRecord(
-                config[DiscordSpec.Kafka.producerChannel], channelId, Json.encodeToString(chatMessage)
+                config[DiscordSpec.Kafka.producerTopic], channelId, Json.encodeToString(chatMessage)
             )
         ) { _: RecordMetadata?, ex: Exception? ->
             // TODO: Better logging
