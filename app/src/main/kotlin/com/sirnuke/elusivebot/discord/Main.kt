@@ -7,6 +7,7 @@ package com.sirnuke.elusivebot.discord
 import com.sirnuke.elusivebot.schema.common.Header
 import com.sirnuke.elusivebot.schema.messages.ChatMessage
 import com.uchuhimo.konf.Config
+import com.uchuhimo.konf.source.yaml
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.entity.channel.MessageChannel
@@ -33,12 +34,17 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
+@OptIn(PrivilegedIntent::class)
 @Suppress("TOO_LONG_FUNCTION")
 fun main() = runBlocking {
     val log = LoggerFactory.getLogger("com.sirnuke.elusivebot.discord.MainKt")
     log.info("Starting Discord service")
 
-    val config = Config { addSpec(DiscordSpec) }.from.env()
+    // spotless:off
+    val config = Config { addSpec(DiscordSpec) }
+        .from.yaml.file("/config/discord-service.yml")
+        .from.env()
+    // spotless:on
 
     val running = AtomicBoolean(true)
 

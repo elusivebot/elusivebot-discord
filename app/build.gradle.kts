@@ -8,6 +8,7 @@ plugins {
 spotless {
     kotlin {
         diktat()
+        toggleOffOn()
     }
     kotlinGradle {
         diktat()
