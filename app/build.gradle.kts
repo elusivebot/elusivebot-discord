@@ -17,7 +17,40 @@ spotless {
 
 repositories {
     mavenCentral()
-    mavenLocal()
+}
+
+run {
+    if (project.hasProperty("internalMavenUrl")) {
+        val internalMavenUsername: String by project
+        val internalMavenPassword: String by project
+        val internalMavenUrl: String by project
+
+        repositories {
+            maven {
+                credentials {
+                    username = internalMavenUsername
+                    password = internalMavenPassword
+                }
+                url = uri("$internalMavenUrl/releases")
+                name = "Internal-Maven-Releases"
+            }
+        }
+
+        repositories {
+            maven {
+                credentials {
+                    username = internalMavenUsername
+                    password = internalMavenPassword
+                }
+                url = uri("$internalMavenUrl/snapshots")
+                name = "Internal-Maven-Snapshots"
+            }
+        }
+    } else {
+        repositories {
+            mavenLocal()
+        }
+    }
 }
 
 group = "com.sirnuke.elusivebot"
