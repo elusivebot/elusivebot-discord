@@ -1,0 +1,4 @@
+#!/bin/bash
+
+set -ex
+sudo docker push docker.degrendel.com/elusivebot/discord:latest

@@ -1,6 +1,0 @@
-#!/bin/bash
-
-set -ex
-./gradlew distZip
-
-sudo docker build -t elusivebot/discord:latest .
