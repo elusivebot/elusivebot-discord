@@ -45,7 +45,8 @@ fun main() = runBlocking {
         .from.env()
     // spotless:on
 
-    log.info("Starting Discord service producer {} & consumer {}", config[DiscordSpec.Kafka.producerTopic], config[DiscordSpec.Kafka.consumerTopic])
+    log.info("Starting Discord service producer {} & consumer {}", config[DiscordSpec.Kafka.producerTopic],
+        config[DiscordSpec.Kafka.consumerTopic])
 
     val running = AtomicBoolean(true)
 
