@@ -1,0 +1,81 @@
+jobs:
+- name: elusivebot-discord
+  plan:
+  - get: elusivebot-discord-git
+    trigger: true
+  - task: build-jar
+    config:
+      platform: linux
+      caches:
+      - path: $HOME/.m2/repository
+      - path: $HOME/.gradle/caches/
+      - path: $HOME/.gradle/wrapper/
+      inputs:
+      - name: elusivebot-discord-git
+      outputs:
+      - name: elusivebot-discord-jar
+      image_resource:
+        name: eclipse-temurin-17-jdk
+        type: registry-image
+        source:
+          repository: eclipse-temurin
+          tag: 17-jdk
+      run:
+        path: bash
+        args: 
+        - -c
+        - |
+          set -e
+          mkdir -p $HOME/.gradle
+          touch $HOME/.gradle/gradle.properties
+          chmod 600 $HOME/.gradle/gradle.properties
+          echo "internalMavenUrl=((maven.url))" > $HOME/.gradle/gradle.properties
+          echo "internalMavenUsername=((maven.username))" >> $HOME/.gradle/gradle.properties
+          echo "internalMavenPassword=((maven.password))" >> $HOME/.gradle/gradle.properties
+          set -x
+          cd elusivebot-discord-git
+          ./gradlew distZip
+          cp Dockerfile ../elusivebot-discord-jar/
+          cp app/build/distributions/app*.zip ../elusivebot-discord-jar/app.zip
+  - task: build-image
+    privileged: true
+    config:
+      platform: linux
+      caches:
+      - path: cache
+      image_resource:
+        type: registry-image
+        source:
+          repository: concourse/oci-build-task
+      inputs:
+      - name: elusivebot-discord-jar
+      outputs:
+      - name: image
+      params:
+        CONTEXT: elusivebot-discord-jar
+        BUILD_ARG_base_filename: app
+        BUILD_ARG_jar_path: .
+      run:
+        path: build
+  - put: elusivebot-discord-image
+    params:
+      image: image/image.tar
+
+
+resources:
+- name: elusivebot-discord-git
+  type: git
+  icon: github
+  source:
+    uri: https://github.com/elusivebot/elusivebot-discord.git
+    username: ((github.username))
+    password: ((github.password))
+- name: elusivebot-discord-image
+  type: registry-image
+  icon: docker
+  source:
+    repository: ((docker.host))/elusivebot/discord
+    username: ((docker.username))
+    password: ((docker.password))
+    tag: latest
+
