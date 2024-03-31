@@ -1,12 +1,14 @@
 FROM eclipse-temurin:17-jre
 LABEL version="0.1.0" description="ElusiveBot Discord endpoint service" maintainer="bryan@degrendel.com"
 
+# Path of the archive without .zip (i.e. app-0.1.0-SNAPSHOT).
+ARG base_filename
+# Path to directory containing the distribution zip
+ARG jar_path=app/build/distributions
+
 RUN apt update && apt install unzip
 
-# TODO: Update this to an argument, investigate whether there's a good
-# way to automagically grab it from gradle.properties and apply to this
-# command and the LABEL version.
-COPY app/build/distributions/app-0.1.0-SNAPSHOT.zip .
-RUN unzip app-0.1.0-SNAPSHOT.zip
+COPY $jar_path/${base_filename}.zip .
+RUN unzip ${base_filename}.zip && mv app-* /app
 
-CMD [ "./app-0.1.0-SNAPSHOT/bin/app" ]
+CMD [ "./app/bin/app" ]

@@ -3,4 +3,4 @@
 set -ex
 ./gradlew distZip
 
-sudo docker build -t docker.degrendel.com/elusivebot/discord:latest .
+sudo docker build --build-arg "base_filename=app-0.1.0-SNAPSHOT" -t docker.degrendel.com/elusivebot/discord:latest .
