@@ -4,8 +4,8 @@
 
 package com.sirnuke.elusivebot.discord
 
-import com.sirnuke.elusivebot.schema.common.Header
-import com.sirnuke.elusivebot.schema.messages.ChatMessage
+import com.sirnuke.elusivebot.schema.ChatMessage
+import com.sirnuke.elusivebot.schema.Header
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dev.kord.common.entity.Snowflake
