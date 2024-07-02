@@ -45,8 +45,10 @@ fun main() = runBlocking {
         .from.env()
     // spotless:on
 
-    log.info("Starting Discord service producer {} & consumer {}", config[DiscordSpec.Kafka.producerTopic],
-        config[DiscordSpec.Kafka.consumerTopic])
+    log.info(
+        "Starting Discord service producer {} & consumer {}", config[DiscordSpec.Kafka.producerTopic],
+        config[DiscordSpec.Kafka.consumerTopic]
+    )
 
     val running = AtomicBoolean(true)
 
@@ -73,8 +75,8 @@ fun main() = runBlocking {
 
     val kord = Kord(config[DiscordSpec.discordToken])
 
-    consumer.foreach { key, raw ->
-        log.info("Got input {} {}", key, raw)
+    consumer.filter { key, _ -> key == config[DiscordSpec.serviceId] }.foreach { key, raw ->
+        log.info("Got message from bot: {}", raw)
         val chatMessage: ChatMessage = Json.decodeFromString(raw)
         if (running.get()) {
             this.launch {
@@ -115,7 +117,7 @@ fun main() = runBlocking {
         )
         producer.send(
             ProducerRecord(
-                config[DiscordSpec.Kafka.producerTopic], channelId, Json.encodeToString(chatMessage)
+                config[DiscordSpec.Kafka.producerTopic], config[DiscordSpec.serviceId], Json.encodeToString(chatMessage)
             )
         ) { _: RecordMetadata?, ex: Exception? ->
             // TODO: Better logging
