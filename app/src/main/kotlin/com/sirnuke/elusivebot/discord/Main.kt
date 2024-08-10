@@ -4,6 +4,7 @@
 
 package com.sirnuke.elusivebot.discord
 
+import com.sirnuke.elusivebot.common.Kafka
 import com.sirnuke.elusivebot.schema.ChatMessage
 import com.sirnuke.elusivebot.schema.Header
 import com.uchuhimo.konf.Config
@@ -15,17 +16,8 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.clients.producer.RecordMetadata
-import org.apache.kafka.common.serialization.Serdes
-import org.apache.kafka.streams.KafkaStreams
-import org.apache.kafka.streams.StreamsBuilder
-import org.apache.kafka.streams.StreamsConfig
-import org.apache.kafka.streams.kstream.KStream
 import org.slf4j.LoggerFactory
 
-import java.lang.Exception
 import java.util.concurrent.atomic.AtomicBoolean
 
 import kotlin.concurrent.thread
@@ -52,51 +44,32 @@ fun main() = runBlocking {
 
     val running = AtomicBoolean(true)
 
-    val consumerConfig = StreamsConfig(
-        mapOf<String, Any>(
-            StreamsConfig.APPLICATION_ID_CONFIG to config[DiscordSpec.serviceId],
-            StreamsConfig.BOOTSTRAP_SERVERS_CONFIG to config[DiscordSpec.Kafka.bootstrap],
-            StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG to Serdes.String().javaClass.name,
-            StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG to Serdes.String().javaClass.name
-        )
-    )
-
-    val builder = StreamsBuilder()
-
-    val producerConfig = mapOf(
-        "bootstrap.servers" to config[DiscordSpec.Kafka.bootstrap],
-        "key.serializer" to "org.apache.kafka.common.serialization.StringSerializer",
-        "value.serializer" to "org.apache.kafka.common.serialization.StringSerializer"
-    )
-
-    val producer: KafkaProducer<String, String> = KafkaProducer(producerConfig)
-
-    val consumer: KStream<String, String> = builder.stream(config[DiscordSpec.Kafka.consumerTopic])
-
     val kord = Kord(config[DiscordSpec.discordToken])
 
-    consumer.filter { key, _ -> key == config[DiscordSpec.serviceId] }.foreach { key, raw ->
-        log.info("Got message from bot: {}", raw)
-        val chatMessage: ChatMessage = Json.decodeFromString(raw)
+    val kafka = Kafka.Builder(
+        applicationId = config[DiscordSpec.serviceId],
+        bootstrap = config[DiscordSpec.Kafka.bootstrap],
+        scope = this,
+    ).registerConsumer(config[DiscordSpec.Kafka.consumerTopic], { stream ->
+        stream.filter { key, _ -> key == config[DiscordSpec.serviceId] }
+    }) { _, key, msg: ChatMessage ->
+        log.info("Got message from the bot: {}", msg.message)
         if (running.get()) {
             this.launch {
-                val channelId = chatMessage.header.channelId?.toULong()
+                val channelId = msg.header.channelId?.toULong()
                 channelId ?: run {
-                    log.warn("Received response message without a channelId! {}: {}", key, raw)
+                    log.warn("Received response message without a channelId! {}: {}", key, msg)
                     return@launch
                 }
                 val channel: MessageChannel? = kord.getChannelOf(Snowflake(channelId))
                 channel ?: run {
-                    log.warn("Unable to find channel with id {}: {}: {}", channelId, key, raw)
+                    log.warn("Unable to find channel with id {}: {}: {}", channelId, key, msg)
                     return@launch
                 }
-                channel.createMessage(content = chatMessage.message)
+                channel.createMessage(content = msg.message)
             }
         }
-    }
-
-    val streams = KafkaStreams(builder.build(), consumerConfig)
-    streams.start()
+    }.build()
 
     kord.on<MessageCreateEvent> {
         // No bots, and cancel if in the process of shutting down the service
@@ -115,12 +88,11 @@ fun main() = runBlocking {
             user = message.author?.id.toString(),
             message = message.content,
         )
-        producer.send(
-            ProducerRecord(
-                config[DiscordSpec.Kafka.producerTopic], config[DiscordSpec.serviceId], Json.encodeToString(chatMessage)
-            )
-        ) { _: RecordMetadata?, ex: Exception? ->
-            // TODO: Better logging
+        kafka.send(
+            topic = config[DiscordSpec.Kafka.producerTopic],
+            key = config[DiscordSpec.serviceId],
+            message = Json.encodeToString(chatMessage),
+        ) { _, ex ->
             ex?.let {
                 log.error("Unable to forward Discord response", ex)
             } ?: log.info("Done forwarding Discord message")
@@ -131,8 +103,7 @@ fun main() = runBlocking {
         running.set(false)
         // TODO: Is the order of closing things going to be an issue?
         this.launch { kord.shutdown() }
-        streams.close()
-        producer.close()
+        kafka.close()
     })
 
     kord.login {
