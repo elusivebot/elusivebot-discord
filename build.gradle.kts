@@ -5,6 +5,9 @@ plugins {
 }
 
 configure<ReleaseExtension> {
-  tagTemplate.set("v\${version}")
+    tagTemplate.set("v\${version}")
+    with(git) {
+        requireBranch.set("main")
+    }
 }
 
