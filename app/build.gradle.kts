@@ -1,7 +1,6 @@
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.8.21"
     application
-    id("net.researchgate.release") version "3.0.2"
     id("com.diffplug.spotless") version "6.25.0"
 }
 
@@ -90,12 +89,5 @@ tasks.register("printVersion") {
     doLast {
         @Suppress("DEBUG_PRINT")
         println(project.version)
-    }
-}
-
-configure<net.researchgate.release.ReleaseExtension> {
-    tagTemplate.set("v\${version}")
-    with(git) {
-        requireBranch.set("main")
     }
 }
