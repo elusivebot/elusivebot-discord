@@ -9,6 +9,6 @@ ARG jar_path=app/build/distributions
 RUN apt update && apt install unzip
 
 COPY $jar_path/${base_filename}.zip .
-RUN unzip ${base_filename}.zip && mv app-* /app
+RUN unzip -d hold ${base_filename}.zip && cd hold && ls && mv * /app && cd .. && rmdir hold
 
-CMD [ "./app/bin/app" ]
+CMD [ "/app/bin/app" ]

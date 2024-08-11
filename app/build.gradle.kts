@@ -1,5 +1,5 @@
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.8.21"
+    id("org.jetbrains.kotlin.jvm") version "2.0.10"
     application
     id("com.diffplug.spotless") version "6.25.0"
 }
@@ -54,21 +54,16 @@ run {
 
 group = "com.sirnuke.elusivebot"
 
-val kafkaApiVersion = "3.6.1"
-
 dependencies {
-    implementation("org.slf4j:slf4j-simple:2.0.12")
+    implementation("org.slf4j:slf4j-simple:2.0.16")
     implementation("com.uchuhimo:konf:1.1.2")
-    implementation("dev.kord:kord-core:0.13.1")
-    implementation("org.apache.kafka:kafka-streams:$kafkaApiVersion")
-    implementation("org.apache.kafka:kafka-clients:$kafkaApiVersion")
+    implementation("dev.kord:kord-core:0.14.0")
 
     implementation("com.sirnuke.elusivebot:elusivebot-schema:0.1.0-SNAPSHOT")
     implementation("com.sirnuke.elusivebot:elusivebot-common:0.1.0-SNAPSHOT")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.3")
-    testImplementation("org.apache.kafka:kafka-streams-test-utils:$kafkaApiVersion")
 }
 
 application {
