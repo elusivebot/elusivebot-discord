@@ -29,7 +29,7 @@ jobs:
           mkdir -p $HOME/.gradle
           touch $HOME/.gradle/gradle.properties
           chmod 600 $HOME/.gradle/gradle.properties
-          echo "internalMavenUrl=((maven.url))" > $HOME/.gradle/gradle.properties
+          echo "internalMavenUrl=https://((maven.host))" > $HOME/.gradle/gradle.properties
           echo "internalMavenUsername=((maven.username))" >> $HOME/.gradle/gradle.properties
           echo "internalMavenPassword=((maven.password))" >> $HOME/.gradle/gradle.properties
           set -x
